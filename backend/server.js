@@ -1,9 +1,12 @@
 // backend/server.js
-const express = require('express');
-const dotenv = require('dotenv');
-const connectDB = require('./config/db.js');
-const userRoutes = require('./routes/userRoutes.js'); // Import user routes
-const cors = require('cors');
+import express from 'express';
+import dotenv from 'dotenv';
+import connectDB from './config/db.js';
+import userRoutes from './routes/userRoutes.js';
+import topicRoutes from './routes/topicRoutes.js';
+import questionRoutes from './routes/questionRoutes.js';
+import setDailyQuestions from './utils/dailyCron.js'; // Import cron job utility
+import cors from 'cors';
 
 // Load environment variables
 dotenv.config();
@@ -15,11 +18,16 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(express.json()); 
+app.use(express.json());
 app.use(cors());
 
 // API Routes
-app.use('/api/users', userRoutes); // Use the user routes
+app.use('/api/users', userRoutes);
+app.use('/api/topics', topicRoutes);
+app.use('/api/questions', questionRoutes);
+
+// Run the daily cron job once on server start
+setDailyQuestions();
 
 // Define a simple root route
 app.get('/', (req, res) => {
