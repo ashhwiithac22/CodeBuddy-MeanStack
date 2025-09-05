@@ -6,9 +6,22 @@ const generateToken = require('../utils/generateToken');
 // @route   POST /api/users
 // @access  Public
 const registerUser = async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, confirmPassword } = req.body;
 
   try {
+    // Validation
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: 'Please fill in all fields' });
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    }
+
     // Check if user exists
     const userExists = await User.findOne({ 
       $or: [{ email }, { username }] 
@@ -57,6 +70,11 @@ const authUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // Validation
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Please provide email and password' });
+    }
+
     // Check if user exists with email or username
     const user = await User.findOne({
       $or: [{ email }, { username: email }]
