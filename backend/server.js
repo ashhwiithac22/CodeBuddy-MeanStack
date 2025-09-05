@@ -7,6 +7,7 @@ import topicRoutes from './routes/topicRoutes.js';
 import questionRoutes from './routes/questionRoutes.js';
 import setDailyQuestions from './utils/dailyCron.js'; // Import cron job utility
 import cors from 'cors';
+import authRoutes from './routes/authRoutes.js'; 
 
 // Load environment variables
 dotenv.config();
@@ -25,6 +26,7 @@ app.use(cors());
 app.use('/api/users', userRoutes);
 app.use('/api/topics', topicRoutes);
 app.use('/api/questions', questionRoutes);
+app.use('/api/auth', authRoutes); 
 
 // Run the daily cron job once on server start
 setDailyQuestions();

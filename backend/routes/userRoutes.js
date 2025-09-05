@@ -1,9 +1,13 @@
 // backend/routes/userRoutes.js
 const express = require('express');
 const router = express.Router();
-const { registerUser, authUser } = require('../controllers/userController');
+const { registerUser, getUserProfile } = require('../controllers/userController');
+const protect = require('../middleware/authMiddleware'); // You'll need to create this
 
-router.route('/').post(registerUser);
-router.post('/login', authUser);
+// POST /api/users (register)
+router.post('/', registerUser);
+
+// GET /api/users/profile (protected route)
+// router.get('/profile', protect, getUserProfile);
 
 module.exports = router;
