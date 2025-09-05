@@ -1,0 +1,22 @@
+.streak-counter {
+  display: inline-flex;
+  align-items: center;
+  background-color: #1a1a1a;
+  color: white;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-weight: bold;
+}
+
+.streak-counter i {
+  color: #ffa116;
+  margin-right: 5px;
+}
+
+.progress {
+  background-color: #e9ecef;
+}
+
+.progress-bar {
+  background-color: #ffa116;
+}

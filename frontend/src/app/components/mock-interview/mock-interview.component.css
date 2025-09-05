@@ -1,0 +1,15 @@
+.progress-bar {
+  background-color: #ffa116;
+  transition: width 0.3s ease;
+}
+
+.lead {
+  font-size: 1.2rem;
+  line-height: 1.6;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+  color: #0c5460;
+}

@@ -1,0 +1,102 @@
+<div class="container mt-4">
+  <div class="row">
+    <!-- Welcome Section -->
+    <div class="col-12 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <h2>Welcome to CodeBuddy!</h2>
+          <p class="lead">Improve your coding skills with daily challenges, mock interviews, and topic-based learning.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Stats -->
+    <div class="col-md-8">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Your Progress</h4>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-4">
+              <div class="display-4 text-primary">{{ userProgress.totalSolved }}</div>
+              <div class="text-muted">Solved</div>
+            </div>
+            <div class="col-4">
+              <div class="display-4 text-success">{{ userProgress.easySolved }}</div>
+              <div class="text-muted">Easy</div>
+            </div>
+            <div class="col-4">
+              <div class="display-4 text-warning">{{ userProgress.mediumSolved }}</div>
+              <div class="text-muted">Medium</div>
+            </div>
+          </div>
+          <div class="mt-3">
+            <div class="streak-counter">
+              <i class="fas fa-fire"></i> {{ userProgress.streak }} day streak
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Challenge -->
+      <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4>Daily Challenge</h4>
+          <span class="badge bg-warning text-dark">{{ dailyChallenge.difficulty }}</span>
+        </div>
+        <div class="card-body">
+          <h5>{{ dailyChallenge.title }}</h5>
+          <p>{{ dailyChallenge.description }}</p>
+          <button class="btn btn-primary" routerLink="/coding-round">Start Challenge</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-md-4">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Quick Actions</h4>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <button class="btn btn-outline-primary" routerLink="/coding-round">
+              <i class="fas fa-code me-2"></i> Coding Round
+            </button>
+            <button class="btn btn-outline-success" routerLink="/mock-interview">
+              <i class="fas fa-microphone me-2"></i> Mock Interview
+            </button>
+            <button class="btn btn-outline-info" routerLink="/topics">
+              <i class="fas fa-book me-2"></i> Learn Topics
+            </button>
+            <button class="btn btn-outline-warning" routerLink="/progress">
+              <i class="fas fa-chart-line me-2"></i> View Progress
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Topics -->
+      <div class="card">
+        <div class="card-header">
+          <h4>Topics Progress</h4>
+        </div>
+        <div class="card-body">
+          <div *ngFor="let topic of topics" class="mb-3">
+            <div class="d-flex justify-content-between">
+              <strong>{{ topic.name }}</strong>
+              <span>{{ topic.solved }}/{{ topic.total }}</span>
+            </div>
+            <div class="progress" style="height: 8px;">
+              <div class="progress-bar" 
+                   [style.width]="getProgressPercentage(topic.solved, topic.total) + '%'">
+              </div>
+            </div>
+          </div>
+          <a routerLink="/topics" class="btn btn-sm btn-outline-secondary w-100">View All Topics</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
