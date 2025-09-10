@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ProgressService } from '../../services/progress.service';
 import { TopicService } from '../../services/topic.service';
-import { CommonModule } from '@angular/common'; // Add this
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
+  standalone: true,
   imports: [CommonModule],
+  templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
 export class DashboardComponent implements OnInit {
@@ -15,55 +17,84 @@ export class DashboardComponent implements OnInit {
     easySolved: 0,
     mediumSolved: 0,
     hardSolved: 0,
-    streak: 0
+    streak: 0,
+    totalScore: 0
   };
-  dailyChallenge: any = { title: 'Daily Challenge', difficulty: 'Medium' };
+  
+  dailyChallenge: any = { 
+    title: 'Two Sum', 
+    difficulty: 'Easy',
+    description: 'Find two numbers that add up to a target',
+    completed: false 
+  };
+  
   topics: any[] = [];
-  streak = 0;
+  isLoading = true;
+  username: string = '';
 
   constructor(
     private progressService: ProgressService,
-    private topicService: TopicService
+    private topicService: TopicService,
+    private authService: AuthService
   ) { }
 
   ngOnInit() {
+    this.username = this.authService.getUsername();
     this.loadUserProgress();
-    this.loadDailyChallenge();
     this.loadTopics();
   }
 
   loadUserProgress() {
-    // Mock data - replace with actual API call
-    this.userProgress = {
-      totalSolved: 15,
-      easySolved: 8,
-      mediumSolved: 5,
-      hardSolved: 2,
-      streak: 7
-    };
-  }
-
-  loadDailyChallenge() {
-    // Mock data - replace with actual API call
-    this.dailyChallenge = {
-      title: 'Two Sum',
-      difficulty: 'Easy',
-      description: 'Find two numbers that add up to a target'
-    };
+    this.progressService.getUserProgress().subscribe(
+      data => {
+        this.userProgress = data;
+        this.isLoading = false;
+      },
+      error => {
+        console.error('Error loading progress:', error);
+        this.isLoading = false;
+        // Start with zeros for new users
+        this.userProgress = {
+          totalSolved: 0,
+          easySolved: 0,
+          mediumSolved: 0,
+          hardSolved: 0,
+          streak: 0,
+          totalScore: 0
+        };
+      }
+    );
   }
 
   loadTopics() {
-    // Mock data - replace with actual API call
-    this.topics = [
-      { name: 'Arrays', description: 'Learn about array manipulation', solved: 5, total: 10 },
-      { name: 'Strings', description: 'String operations and algorithms', solved: 3, total: 8 },
-      { name: 'Linked Lists', description: 'Working with linked data structures', solved: 2, total: 6 },
-      { name: 'Trees', description: 'Tree traversal and algorithms', solved: 1, total: 5 },
-      { name: 'Graphs', description: 'Graph algorithms and traversal', solved: 0, total: 7 }
-    ];
+    this.topicService.getTopics().subscribe(
+      data => {
+        this.topics = data.map(topic => ({
+          ...topic,
+          solved: 0, // Start with 0 solved
+          total: 10  // Assume 10 problems per topic
+        }));
+      },
+      error => {
+        console.error('Error loading topics:', error);
+        // Mock topics if API fails
+        this.topics = [
+          { name: 'Arrays', description: 'Learn about array manipulation', solved: 0, total: 10 },
+          { name: 'Strings', description: 'String operations and algorithms', solved: 0, total: 8 },
+          { name: 'Linked Lists', description: 'Working with linked data structures', solved: 0, total: 6 }
+        ];
+      }
+    );
   }
 
   getProgressPercentage(solved: number, total: number): number {
-    return total > 0 ? (solved / total) * 100 : 0;
+    return total > 0 ? Math.round((solved / total) * 100) : 0;
+  }
+
+  getProgressColor(percentage: number): string {
+    if (percentage === 0) return 'bg-secondary';
+    if (percentage < 30) return 'bg-danger';
+    if (percentage < 70) return 'bg-warning';
+    return 'bg-success';
   }
 }

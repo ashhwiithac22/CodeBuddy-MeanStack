@@ -5,8 +5,9 @@ import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-topic-list',
-  templateUrl: './topic-list.component.html',
+  standalone: true,
   imports: [CommonModule, FormsModule],
+  templateUrl: './topic-list.component.html',
   styleUrls: ['./topic-list.component.css']
 })
 export class TopicListComponent implements OnInit {
@@ -15,6 +16,11 @@ export class TopicListComponent implements OnInit {
   searchText = '';
   selectedCategory = 'all';
   categories = ['all', 'DSA', 'SQL', 'Python'];
+  selectedTopic: any = null;
+  showPracticeModal = false;
+  userCode: string = '';
+  output: string = '';
+  isLoading = true;
 
   constructor(private topicService: TopicService) { }
 
@@ -27,9 +33,11 @@ export class TopicListComponent implements OnInit {
       data => {
         this.topics = data;
         this.filteredTopics = data;
+        this.isLoading = false;
       },
       error => {
         console.error('Error loading topics:', error);
+        this.isLoading = false;
       }
     );
   }
@@ -43,13 +51,43 @@ export class TopicListComponent implements OnInit {
     });
   }
 
-  getProgressPercentage(solved: number, total: number): number {
-    return total > 0 ? (solved / total) * 100 : 0;
+  selectTopic(topic: any) {
+    this.selectedTopic = topic;
+    this.showPracticeModal = true;
+    this.userCode = topic.defaultCode || '# Write your solution here\n';
+    this.output = '';
   }
 
-  getProgressColor(percentage: number): string {
-    if (percentage >= 70) return 'bg-success';
-    if (percentage >= 40) return 'bg-warning';
-    return 'bg-danger';
+  runCode() {
+    this.output = 'Running your code...\n\n';
+    
+    // Simulate code execution
+    setTimeout(() => {
+      if (this.userCode.includes('def') || this.userCode.includes('class')) {
+        this.output += '✅ Great job! Your solution looks correct.\n';
+        this.output += '🎉 +10 points earned!\n\n';
+        this.output += 'Sample Output: Solution executed successfully';
+        
+        // Add some sample outputs based on the topic
+        if (this.selectedTopic.name.includes('Two Sum')) {
+          this.output += '\nInput: [2,7,11,15], target=9\nOutput: [0,1]';
+        } else if (this.selectedTopic.name.includes('Duplicate')) {
+          this.output += '\nInput: [1,2,3,1]\nOutput: True';
+        }
+      } else {
+        this.output += '❌ Please implement a complete solution.\n';
+        this.output += '💡 Hint: ' + this.selectedTopic.hints[0];
+      }
+    }, 1500);
+  }
+
+  closeModal() {
+    this.showPracticeModal = false;
+    this.selectedTopic = null;
+  }
+
+  getProblemIcon(index: number): string {
+    const icons = ['🔍', '🎯', '⚡', '🚀', '💡', '🔥', '🌟', '📊', '🎮', '🏆'];
+    return icons[index % icons.length];
   }
 }

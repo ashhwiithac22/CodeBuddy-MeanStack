@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -11,41 +12,33 @@ export class ProgressService {
   constructor(private http: HttpClient) { }
 
   getUserProgress(): Observable<any> {
-    // Mock data - replace with actual API call
-    return new Observable(observer => {
-      const progress = {
-        totalSolved: 27,
-        easySolved: 15,
-        mediumSolved: 9,
-        hardSolved: 3,
-        streak: 12,
-        totalScore: 420,
-        dailyScores: [
-          { date: '2023-05-01', score: 30 },
-          { date: '2023-05-02', score: 45 },
-          { date: '2023-05-03', score: 20 },
-          { date: '2023-05-04', score: 60 },
-          { date: '2023-05-05', score: 35 },
-          { date: '2023-05-06', score: 50 },
-          { date: '2023-05-07', score: 40 }
-        ],
-        recentActivities: [
-          { type: 'solved', problem: 'Two Sum', difficulty: 'Easy', time: '2 hours ago' },
-          { type: 'solved', problem: 'Reverse String', difficulty: 'Easy', time: '4 hours ago' },
-          { type: 'attempted', problem: 'Binary Tree Inorder', difficulty: 'Medium', time: '1 day ago' },
-          { type: 'solved', problem: 'Valid Parentheses', difficulty: 'Easy', time: '1 day ago' }
-        ]
-      };
-      observer.next(progress);
-      observer.complete();
-    });
+    // MOCK DATA - Replace with actual API call when backend is ready
+    return of({
+      totalSolved: 0,      // Start with 0
+      easySolved: 0,
+      mediumSolved: 0,
+      hardSolved: 0,
+      streak: 0,
+      totalScore: 0
+    }).pipe(delay(300));
+    
+    // REAL API CALL (comment out for now):
+    // return this.http.get<any>(`${this.apiUrl}/user-progress`);
+  }
+
+  updateProgress(questionData: any): Observable<any> {
+    // MOCK - Replace with actual API call
+    return of({ success: true }).pipe(delay(300));
   }
 
   getLeaderboard(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/leaderboard`);
-  }
-
-  updateProgress(questionId: number, solved: boolean): Observable<any> {
-    return this.http.post(`${this.apiUrl}/update`, { questionId, solved });
+    // MOCK leaderboard
+    return of([
+      { rank: 1, username: 'codeMaster', score: 850, solved: 68 },
+      { rank: 2, username: 'algoNinja', score: 720, solved: 59 },
+      { rank: 3, username: 'pythonPro', score: 680, solved: 54 },
+      { rank: 4, username: 'beginnerCoder', score: 120, solved: 15 },
+      { rank: 5, username: 'newbie', score: 45, solved: 8 }
+    ]).pipe(delay(500));
   }
 }

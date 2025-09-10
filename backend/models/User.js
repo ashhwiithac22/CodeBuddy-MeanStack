@@ -1,54 +1,36 @@
-// backend/models/User.js
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 
-const userSchema = mongoose.Schema(
-  {
-    username: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    score: {
-      type: Number,
-      default: 0,
-    },
-    dailyStreak: {
-      type: Number,
-      default: 0,
-    },
-    lastSolvedDate: {
-      type: Date,
-      default: null,
-    },
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
+  
+  // Progress tracking fields
+  progress: {
+    totalSolved: { type: Number, default: 0 },
+    easySolved: { type: Number, default: 0 },
+    mediumSolved: { type: Number, default: 0 },
+    hardSolved: { type: Number, default: 0 },
+    totalScore: { type: Number, default: 0 },
+    streak: { type: Number, default: 0 },
+    lastActivity: { type: Date, default: Date.now }
   },
-  {
-    timestamps: true,
-  }
-);
-
-// Middleware to hash password before saving
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    next();
-  }
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  
+  // Topic progress
+  topics: [{
+    topicId: { type: mongoose.Schema.Types.ObjectId, ref: 'Topic' },
+    name: String,
+    solved: { type: Number, default: 0 },
+    total: { type: Number, default: 0 }
+  }],
+  
+  // Daily challenges completed
+  dailyChallenges: [{
+    date: Date,
+    completed: Boolean,
+    score: Number
+  }]
 });
 
-// Method to compare entered password with hashed password
-userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
-};
-
-const User = mongoose.model('User', userSchema);
-module.exports = User;
+module.exports = mongoose.model('User', userSchema);
