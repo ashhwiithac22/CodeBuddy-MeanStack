@@ -1,10 +1,11 @@
 <div class="container mt-4">
   <div class="row">
-    <div class="col-12">
+    <!-- Left Side - Topics List -->
+    <div class="col-md-6" [class.col-md-12]="showTopicDetail">
       <div class="card mb-4">
         <div class="card-header bg-dark text-white">
-          <h4><i class="fas fa-brain me-2"></i>Data Structures & Algorithms Mastery</h4>
-          <p class="mb-0">Learn where and how to apply each data structure with practical interview problems</p>
+          <h4><i class="fas fa-brain me-2"></i>Data Structures & Algorithms</h4>
+          <p class="mb-0">Select a topic to learn and practice</p>
         </div>
         <div class="card-body">
           <div class="row mb-3">
@@ -31,61 +32,25 @@
         <p class="mt-3">Loading topics...</p>
       </div>
 
-      <!-- Welcome message -->
-      <div *ngIf="!isLoading && filteredTopics.length > 0" class="alert alert-info">
-        <h5><i class="fas fa-lightbulb me-2"></i>How to Use This Guide</h5>
-        <p class="mb-2">Each topic includes:</p>
-        <ul class="mb-1">
-          <li>📝 <strong>Practical Applications</strong> - Where to use this data structure</li>
-          <li>🎯 <strong>Common Problems</strong> - Popular interview questions</li>
-          <li>💡 <strong>Solution Approaches</strong> - How to solve these problems</li>
-        </ul>
-        <small>Click "Practice Now" to solve problems with our built-in code editor!</small>
-      </div>
-
+      <!-- Topics Grid -->
       <div class="row">
-        <div *ngFor="let topic of filteredTopics" class="col-md-6 mb-4">
-          <div class="card h-100 topic-card">
+        <div *ngFor="let topic of filteredTopics" class="col-md-6 mb-3">
+          <div class="card topic-card h-100" (click)="selectTopic(topic)">
             <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white">
-              <h5 class="mb-0">{{ topic.name }}</h5>
+              <h6 class="mb-0">{{ topic.name }}</h6>
               <span class="badge bg-light text-dark">{{ topic.category }}</span>
             </div>
             <div class="card-body">
-              <p class="card-text">{{ topic.description }}</p>
-              
-              <div class="mb-3">
-                <h6><i class="fas fa-map-marker-alt me-1"></i>Where to Use:</h6>
-                <ul class="list-unstyled">
-                  <li *ngFor="let hint of topic.hints.slice(0, 3)" class="mb-1">
-                    <i class="fas fa-check-circle text-success me-1"></i>
-                    <small>{{ hint }}</small>
-                  </li>
-                </ul>
-                <small *ngIf="topic.hints.length > 3" class="text-muted">
-                  +{{ topic.hints.length - 3 }} more applications
-                </small>
-              </div>
-
-              <div class="mb-3">
-                <h6><i class="fas fa-clipboard-list me-1"></i>Top Interview Problems:</h6>
-                <div class="row">
-                  <div *ngFor="let problem of topic.commonProblems.slice(0, 5); let i = index" class="col-12 mb-1">
-                    <span class="me-1">{{ getProblemIcon(i) }}</span>
-                    <small>{{ problem }}</small>
-                  </div>
-                </div>
-                <small *ngIf="topic.commonProblems.length > 5" class="text-muted">
-                  +{{ topic.commonProblems.length - 5 }} more problems
-                </small>
+              <p class="card-text small">{{ topic.description }}</p>
+              <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">{{ topic.commonProblems.length }} problems</small>
+                <span class="badge bg-info">{{ topic.hints.length }} hints</span>
               </div>
             </div>
-            <div class="card-footer bg-transparent">
-              <button class="btn btn-primary btn-sm" (click)="selectTopic(topic)">
-                <i class="fas fa-code me-1"></i>Practice Now
-              </button>
-              <button class="btn btn-outline-secondary btn-sm ms-2">
-                <i class="fas fa-book me-1"></i>Study Guide
-              </button>
+            <div class="card-footer bg-transparent py-2">
+              <small class="text-primary">
+                <i class="fas fa-arrow-right me-1"></i>Click to learn
+              </small>
             </div>
           </div>
         </div>
@@ -97,63 +62,86 @@
         <p class="text-muted">Try adjusting your search or filter criteria</p>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- Practice Modal -->
-<div *ngIf="showPracticeModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5)">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header bg-dark text-white">
-        <h5 class="modal-title">
-          <i class="fas fa-code me-2"></i>Practice: {{ selectedTopic?.name }}
-        </h5>
-        <button type="button" class="btn-close btn-close-white" (click)="closeModal()"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <h6>🧠 Problem to Solve:</h6>
-          <p class="fw-bold text-primary">{{ selectedTopic?.commonProblems[0] }}</p>
+    <!-- Right Side - Topic Detail -->
+    <div class="col-md-6" *ngIf="showTopicDetail">
+      <div class="card h-100">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">
+            <i class="fas fa-code me-2"></i>{{ selectedTopic?.name }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeTopicDetail()"></button>
         </div>
-
-        <div class="mb-3">
-          <h6>💡 Solution Approaches:</h6>
-          <ul class="list-unstyled">
-            <li *ngFor="let hint of selectedTopic?.hints.slice(0, 3)" class="mb-1">
-              <i class="fas fa-lightbulb text-warning me-1"></i>
-              <small>{{ hint }}</small>
+        
+        <div class="card-body">
+          <!-- Tabs -->
+          <ul class="nav nav-tabs mb-3">
+            <li class="nav-item">
+              <a class="nav-link" [class.active]="activeTab === 'hints'" 
+                 (click)="setActiveTab('hints')">💡 Hints & Applications</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" [class.active]="activeTab === 'problems'" 
+                 (click)="setActiveTab('problems')">🎯 Common Problems</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" [class.active]="activeTab === 'practice'" 
+                 (click)="setActiveTab('practice')">🚀 Practice</a>
             </li>
           </ul>
-        </div>
 
-        <div class="mb-3">
-          <h6>📝 Code Editor (Python):</h6>
-          <textarea class="form-control code-editor" rows="12" 
-                    [(ngModel)]="userCode" 
-                    placeholder="# Write your solution here..."></textarea>
-        </div>
+          <!-- Hints Tab -->
+          <div *ngIf="activeTab === 'hints'">
+            <h6>Where to Use {{ selectedTopic?.name }}:</h6>
+            <ul class="list-group list-group-flush mb-3">
+              <li *ngFor="let hint of selectedTopic?.hints" class="list-group-item border-0 px-0 py-2">
+                <i class="fas fa-check-circle text-success me-2"></i>
+                <small>{{ hint }}</small>
+              </li>
+            </ul>
+          </div>
 
-        <div class="mb-3">
-          <button class="btn btn-success me-2" (click)="runCode()">
-            <i class="fas fa-play me-1"></i>Run Code
-          </button>
-          <button class="btn btn-primary">
-            <i class="fas fa-paper-plane me-1"></i>Submit Solution
-          </button>
-        </div>
+          <!-- Problems Tab -->
+          <div *ngIf="activeTab === 'problems'">
+            <h6>Top Interview Problems:</h6>
+            <div class="list-group list-group-flush">
+              <a *ngFor="let problem of selectedTopic?.commonProblems; let i = index" 
+                 href="javascript:void(0)" class="list-group-item list-group-item-action border-0 px-0 py-2">
+                <span class="me-2">{{ getProblemIcon(i) }}</span>
+                <small>{{ problem }}</small>
+              </a>
+            </div>
+          </div>
 
-        <div class="output-container">
-          <h6>📊 Output:</h6>
-          <pre class="bg-light p-3 rounded">{{ output || 'Click "Run Code" to test your solution...' }}</pre>
+          <!-- Practice Tab -->
+          <div *ngIf="activeTab === 'practice'">
+            <h6>Practice Problem:</h6>
+            <p class="text-primary fw-bold">{{ selectedTopic?.commonProblems[0] }}</p>
+            
+            <div class="mb-3">
+              <label class="form-label">Your Solution:</label>
+              <textarea class="form-control code-editor" rows="10" 
+                        [(ngModel)]="userCode" 
+                        placeholder="# Write your solution here..."></textarea>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <button class="btn btn-success me-md-2" (click)="runCode()">
+                <i class="fas fa-play me-1"></i>Run Code
+              </button>
+              <button class="btn btn-primary">
+                <i class="fas fa-paper-plane me-1"></i>Submit
+              </button>
+            </div>
+
+            <div class="mt-3">
+              <label class="form-label">Output:</label>
+              <div class="output-container">
+                <pre class="p-3 mb-0">{{ output || 'Run your code to see results...' }}</pre>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" (click)="closeModal()">
-          <i class="fas fa-times me-1"></i>Close
-        </button>
-        <button type="button" class="btn btn-outline-info">
-          <i class="fas fa-hint me-1"></i>Need Hint?
-        </button>
       </div>
     </div>
   </div>

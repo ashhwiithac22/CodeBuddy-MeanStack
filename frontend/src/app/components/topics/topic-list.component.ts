@@ -17,10 +17,11 @@ export class TopicListComponent implements OnInit {
   selectedCategory = 'all';
   categories = ['all', 'DSA', 'SQL', 'Python'];
   selectedTopic: any = null;
-  showPracticeModal = false;
+  showTopicDetail = false;
   userCode: string = '';
   output: string = '';
   isLoading = true;
+  activeTab: string = 'hints';
 
   constructor(private topicService: TopicService) { }
 
@@ -53,9 +54,15 @@ export class TopicListComponent implements OnInit {
 
   selectTopic(topic: any) {
     this.selectedTopic = topic;
-    this.showPracticeModal = true;
+    this.showTopicDetail = true;
     this.userCode = topic.defaultCode || '# Write your solution here\n';
     this.output = '';
+    this.activeTab = 'hints';
+  }
+
+  closeTopicDetail() {
+    this.showTopicDetail = false;
+    this.selectedTopic = null;
   }
 
   runCode() {
@@ -63,7 +70,7 @@ export class TopicListComponent implements OnInit {
     
     // Simulate code execution
     setTimeout(() => {
-      if (this.userCode.includes('def') || this.userCode.includes('class')) {
+      if (this.userCode.includes('def') || this.userCode.includes('class') || this.userCode.includes('return')) {
         this.output += '✅ Great job! Your solution looks correct.\n';
         this.output += '🎉 +10 points earned!\n\n';
         this.output += 'Sample Output: Solution executed successfully';
@@ -73,6 +80,8 @@ export class TopicListComponent implements OnInit {
           this.output += '\nInput: [2,7,11,15], target=9\nOutput: [0,1]';
         } else if (this.selectedTopic.name.includes('Duplicate')) {
           this.output += '\nInput: [1,2,3,1]\nOutput: True';
+        } else if (this.selectedTopic.name.includes('Palindrome')) {
+          this.output += '\nInput: "A man, a plan, a canal: Panama"\nOutput: True';
         }
       } else {
         this.output += '❌ Please implement a complete solution.\n';
@@ -81,9 +90,8 @@ export class TopicListComponent implements OnInit {
     }, 1500);
   }
 
-  closeModal() {
-    this.showPracticeModal = false;
-    this.selectedTopic = null;
+  setActiveTab(tab: string) {
+    this.activeTab = tab;
   }
 
   getProblemIcon(index: number): string {
