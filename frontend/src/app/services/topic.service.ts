@@ -1,37 +1,60 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
+
+export interface Topic {
+  id: number;
+  name: string;
+  category: string;
+  description: string;
+  hints: Hint[];
+  commonProblems: string[];
+}
+
+export interface Hint {
+  title: string;
+  description: string;
+  codeSnippet: string;
+  language: string;
+}
+
+export interface Problem {
+  id: number;
+  title: string;
+  description: string;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  defaultCode: { [key: string]: string };
+  testCases: TestCase[];
+}
+
+export interface TestCase {
+  input: string;
+  output: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class TopicService {
-  private apiUrl = 'http://localhost:5000/api/topics';
+  
+  constructor() { }
 
-  constructor(private http: HttpClient) { }
-
-  getTopics(): Observable<any[]> {
-    // Return comprehensive topic data with practical hints and problems
+  getTopics(): Observable<Topic[]> {
     return of(this.getComprehensiveTopics()).pipe(delay(300));
   }
 
-  private getComprehensiveTopics() {
+  getProblems(topicId: number): Observable<Problem[]> {
+    return of(this.getTopicProblems(topicId)).pipe(delay(300));
+  }
+
+  private getComprehensiveTopics(): Topic[] {
     return [
       {
         id: 1,
         name: 'Arrays & Lists',
         category: 'DSA',
         description: 'Master array manipulation and list operations',
-        hints: [
-          'Use when you need ordered collection with fast access by index',
-          'Great for problems involving sequences, sorting, and searching',
-          'Two-pointer technique: Perfect for pair sum, palindrome, and sliding window problems',
-          'Sorting arrays often simplifies many problems (Two Sum, Three Sum)',
-          'Binary search works on sorted arrays for O(log n) search',
-          'Prefix sum arrays help with range sum queries',
-          'In-place operations save space (reverse, rotate, move zeros)'
-        ],
+        hints: this.getArrayHints(),
         commonProblems: [
           'Two Sum - Find indices of two numbers that add to target',
           'Maximum Subarray - Kadane\'s algorithm for maximum sum',
@@ -43,33 +66,14 @@ export class TopicService {
           '3Sum - Find triplets that sum to zero',
           'Best Time to Buy/Sell Stock - Maximum profit',
           'Next Permutation - Rearrange numbers'
-        ],
-        defaultCode: `# Two Sum Solution
-def two_sum(nums, target):
-    num_map = {}
-    for i, num in enumerate(nums):
-        complement = target - num
-        if complement in num_map:
-            return [num_map[complement], i]
-        num_map[num] = i
-    return []
-
-# Test
-print(two_sum([2, 7, 11, 15], 9))  # Output: [0, 1]`
+        ]
       },
       {
         id: 2,
         name: 'HashSets',
         category: 'DSA',
         description: 'Unordered collections for unique elements with O(1) operations',
-        hints: [
-          'Use when you need to check existence quickly (contains/duplicates)',
-          'Perfect for duplicate detection in arrays/strings',
-          'Great for tracking seen elements in traversal problems',
-          'Use for finding intersections/unions between datasets',
-          'Helpful for memoization and caching results',
-          'Ideal for problems requiring unique elements only'
-        ],
+        hints: this.getHashSetHints(),
         commonProblems: [
           'Contains Duplicate - Check if array has duplicates',
           'Longest Substring Without Repeating Characters',
@@ -81,32 +85,14 @@ print(two_sum([2, 7, 11, 15], 9))  # Output: [0, 1]`
           'Valid Sudoku - Check row/col/box duplicates',
           'First Missing Positive - Using set for existence',
           'Group Anagrams - Using sorted key in map'
-        ],
-        defaultCode: `# Contains Duplicate Solution
-def contains_duplicate(nums):
-    seen = set()
-    for num in nums:
-        if num in seen:
-            return True
-        seen.add(num)
-    return False
-
-# Test
-print(contains_duplicate([1, 2, 3, 1]))  # Output: True`
+        ]
       },
       {
         id: 3,
         name: 'HashMaps & Dictionaries',
         category: 'DSA',
         description: 'Key-value stores for efficient lookups and frequency counting',
-        hints: [
-          'Use for frequency counting (character counts, word frequencies)',
-          'Perfect for grouping and categorization problems',
-          'Great for memoization and caching intermediate results',
-          'Use for mapping relationships between elements',
-          'Ideal for problems needing O(1) lookups with custom keys',
-          'Helpful for two-sum type problems and complement finding'
-        ],
+        hints: this.getHashMapHints(),
         commonProblems: [
           'Two Sum - Classic hashmap problem',
           'Group Anagrams - Group words by sorted key',
@@ -118,33 +104,14 @@ print(contains_duplicate([1, 2, 3, 1]))  # Output: True`
           'Word Pattern - Pattern matching with bijection',
           'Ransom Note - Character frequency check',
           'Isomorphic Strings - Character mapping validation'
-        ],
-        defaultCode: `# Group Anagrams Solution
-def group_anagrams(strs):
-    groups = {}
-    for s in strs:
-        key = ''.join(sorted(s))
-        if key not in groups:
-            groups[key] = []
-        groups[key].append(s)
-    return list(groups.values())
-
-# Test
-print(group_anagrams(["eat","tea","tan","ate","nat","bat"]))`
+        ]
       },
       {
         id: 4,
         name: 'Strings',
         category: 'DSA',
         description: 'Text manipulation and pattern matching algorithms',
-        hints: [
-          'Two pointers for palindrome and reversal problems',
-          'Sliding window for substring and window-based problems',
-          'Character frequency counting for anagram problems',
-          'Stack-based approaches for parsing and validation',
-          'KMP algorithm for efficient pattern matching',
-          'Reverse engineering often helps (reverse whole, then parts)'
-        ],
+        hints: this.getStringHints(),
         commonProblems: [
           'Valid Palindrome - Two pointers from ends',
           'Longest Palindromic Substring - Expand around center',
@@ -156,38 +123,14 @@ print(group_anagrams(["eat","tea","tan","ate","nat","bat"]))`
           'Letter Combinations of Phone Number - Backtracking',
           'Valid Anagram - Frequency counting',
           'Implement strStr() - String searching'
-        ],
-        defaultCode: `# Valid Palindrome Solution
-def is_palindrome(s):
-    left, right = 0, len(s) - 1
-    while left < right:
-        if not s[left].isalnum():
-            left += 1
-        elif not s[right].isalnum():
-            right -= 1
-        elif s[left].lower() != s[right].lower():
-            return False
-        else:
-            left += 1
-            right -= 1
-    return True
-
-# Test
-print(is_palindrome("A man, a plan, a canal: Panama"))  # True`
+        ]
       },
       {
         id: 5,
         name: 'Linked Lists',
         category: 'DSA',
         description: 'Pointer manipulation and node-based structures',
-        hints: [
-          'Two pointers (slow/fast) for cycle detection and middle finding',
-          'Dummy nodes simplify edge cases in modification problems',
-          'Reversal problems often use three pointers (prev, curr, next)',
-          'Recursive approaches work well for many list problems',
-          'Consider stack for reverse order processing',
-          'Merge patterns for sorted list operations'
-        ],
+        hints: this.getLinkedListHints(),
         commonProblems: [
           'Reverse Linked List - Iterative and recursive',
           'Detect Cycle in Linked List - Floyd\'s algorithm',
@@ -199,258 +142,227 @@ print(is_palindrome("A man, a plan, a canal: Panama"))  # True`
           'Palindrome Linked List - Reverse half',
           'Intersection of Two Linked Lists',
           'Sort List - Merge sort for O(n log n)'
-        ],
-        defaultCode: `# Reverse Linked List Solution
-class ListNode:
-    def __init__(self, val=0, next=None):
-        self.val = val
-        self.next = next
-
-def reverse_list(head):
-    prev = None
-    current = head
-    while current:
-        next_node = current.next
-        current.next = prev
-        prev = current
-        current = next_node
-    return prev`
-      },
-      {
-        id: 6,
-        name: 'Stacks',
-        category: 'DSA',
-        description: 'LIFO structure for DFS, backtracking, and parsing',
-        hints: [
-          'Use for depth-first search and backtracking algorithms',
-          'Perfect for parsing and syntax validation problems',
-          'Great for reversing order or processing in reverse',
-          'Monotonic stacks help with next greater element problems',
-          'Use for iterative tree traversals',
-          'Helpful for undo/redo functionality simulations'
-        ],
-        commonProblems: [
-          'Valid Parentheses - Stack validation',
-          'Min Stack - Track minimum efficiently',
-          'Evaluate Reverse Polish Notation',
-          'Daily Temperatures - Next warmer day',
-          'Largest Rectangle in Histogram',
-          'Binary Tree Inorder Traversal - Iterative',
-          'Decode String - Nested decoding',
-          'Asteroid Collision - Simulation with stack',
-          'Remove All Adjacent Duplicates',
-          'Simplify Path - Stack for directory navigation'
-        ],
-        defaultCode: `# Valid Parentheses Solution
-def is_valid(s):
-    stack = []
-    mapping = {')': '(', '}': '{', ']': '['}
-    for char in s:
-        if char in mapping:
-            top = stack.pop() if stack else '#'
-            if mapping[char] != top:
-                return False
-        else:
-            stack.append(char)
-    return not stack
-
-# Test
-print(is_valid("()[]{}"))  # True`
-      },
-      {
-        id: 7,
-        name: 'Queues',
-        category: 'DSA',
-        description: 'FIFO structure for BFS, scheduling, and level-order processing',
-        hints: [
-          'Use for breadth-first search algorithms',
-          'Perfect for level-order tree traversals',
-          'Great for scheduling and task processing problems',
-          'Priority queues for always processing min/max elements',
-          'Use for sliding window maximum problems',
-          'Helpful for cache implementations (LRU)'
-        ],
-        commonProblems: [
-          'Binary Tree Level Order Traversal',
-          'Implement Queue using Stacks',
-          'Sliding Window Maximum',
-          'Rotting Oranges - BFS simulation',
-          'Course Schedule - Topological sort',
-          'Design Circular Queue',
-          'Number of Islands - BFS approach',
-          'Open the Lock - BFS shortest path',
-          'Task Scheduler - Priority queue',
-          'First Unique Character - Queue with frequency'
-        ],
-        defaultCode: `# Binary Tree Level Order Traversal
-from collections import deque
-
-class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
-        self.val = val
-        self.left = left
-        self.right = right
-
-def level_order(root):
-    if not root:
-        return []
-    
-    result = []
-    queue = deque([root])
-    
-    while queue:
-        level_size = len(queue)
-        current_level = []
-        
-        for _ in range(level_size):
-            node = queue.popleft()
-            current_level.append(node.val)
-            if node.left:
-                queue.append(node.left)
-            if node.right:
-                queue.append(node.right)
-        
-        result.append(current_level)
-    
-    return result`
-      },
-      {
-        id: 8,
-        name: 'Trees & BST',
-        category: 'DSA',
-        description: 'Hierarchical structures and efficient searching',
-        hints: [
-          'Recursion is natural for tree problems',
-          'For BST: left < root < right property',
-          'In-order traversal gives sorted order for BST',
-          'BFS (level-order) for level-based problems',
-          'DFS (pre/in/post-order) for path and search problems',
-          'Think about tree properties: height, depth, diameter'
-        ],
-        commonProblems: [
-          'Validate Binary Search Tree',
-          'Maximum Depth of Binary Tree',
-          'Binary Tree Level Order Traversal',
-          'Lowest Common Ancestor',
-          'Serialize and Deserialize Binary Tree',
-          'Construct Binary Tree from Preorder and Inorder',
-          'Kth Smallest Element in BST',
-          'Path Sum - Check path with target sum',
-          'Diameter of Binary Tree',
-          'Balanced Binary Tree - Check height balance'
-        ],
-        defaultCode: `# Validate BST Solution
-class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
-        self.val = val
-        self.left = left
-        self.right = right
-
-def is_valid_bst(root):
-    def validate(node, low=-float('inf'), high=float('inf')):
-        if not node:
-            return True
-        if node.val <= low or node.val >= high:
-            return False
-        return (validate(node.left, low, node.val) and 
-                validate(node.right, node.val, high))
-    
-    return validate(root)`
-      },
-      {
-        id: 9,
-        name: 'Graphs',
-        category: 'DSA',
-        description: 'Network structures and relationship modeling',
-        hints: [
-          'BFS for shortest path in unweighted graphs',
-          'DFS for connectivity and path finding',
-          'Union-Find for connected components',
-          'Topological sort for dependency ordering',
-          'Dijkstra for shortest path in weighted graphs',
-          'Adjacency list vs matrix representation choices'
-        ],
-        commonProblems: [
-          'Number of Islands - DFS/BFS traversal',
-          'Course Schedule - Cycle detection',
-          'Clone Graph - DFS/BFS with mapping',
-          'Word Ladder - BFS shortest path',
-          'Pacific Atlantic Water Flow - Multi-source BFS',
-          'Graph Valid Tree - Union-Find/DFS',
-          'Network Delay Time - Dijkstra algorithm',
-          'Alien Dictionary - Topological sort',
-          'Walls and Gates - Multi-source BFS',
-          'Cheapest Flights Within K Stops - Bellman-Ford'
-        ],
-        defaultCode: `# Number of Islands Solution
-def num_islands(grid):
-    if not grid:
-        return 0
-    
-    def dfs(i, j):
-        if i < 0 or i >= len(grid) or j < 0 or j >= len(grid[0]) or grid[i][j] == '0':
-            return
-        grid[i][j] = '0'
-        dfs(i+1, j)
-        dfs(i-1, j)
-        dfs(i, j+1)
-        dfs(i, j-1)
-    
-    count = 0
-    for i in range(len(grid)):
-        for j in range(len(grid[0])):
-            if grid[i][j] == '1':
-                dfs(i, j)
-                count += 1
-    
-    return count`
-      },
-      {
-        id: 10,
-        name: 'Heaps & Priority Queues',
-        category: 'DSA',
-        description: 'Efficient access to min/max elements',
-        hints: [
-          'Use when you need frequent access to min/max elements',
-          'Great for kth largest/smallest element problems',
-          'Perfect for merge k sorted lists/arrays',
-          'Use for scheduling with priorities',
-          'Helpful for median finding problems',
-          'Consider min-heap for largest, max-heap for smallest'
-        ],
-        commonProblems: [
-          'Kth Largest Element in Array',
-          'Merge K Sorted Lists',
-          'Top K Frequent Elements',
-          'Find Median from Data Stream',
-          'Task Scheduler',
-          'K Closest Points to Origin',
-          'Sliding Window Median',
-          'Minimum Cost to Connect Sticks',
-          'Ugly Number II - Heap with factors',
-          'Rearrange String - No adjacent duplicates'
-        ],
-        defaultCode: `# Kth Largest Element Solution
-import heapq
-
-def find_kth_largest(nums, k):
-    return heapq.nlargest(k, nums)[-1]
-
-# Alternative with min-heap
-def find_kth_largest_heap(nums, k):
-    min_heap = []
-    for num in nums:
-        heapq.heappush(min_heap, num)
-        if len(min_heap) > k:
-            heapq.heappop(min_heap)
-    return min_heap[0]`
+        ]
       }
     ];
   }
 
-  getTopicById(id: number): Observable<any> {
-    const topics = this.getComprehensiveTopics();
-    const topic = topics.find(t => t.id === id);
-    return of(topic).pipe(delay(200));
+  private getTopicProblems(topicId: number): Problem[] {
+    // Sample problems for each topic
+    const problems: { [key: number]: Problem[] } = {
+      1: [
+        {
+          id: 1,
+          title: 'Two Sum',
+          description: 'Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.',
+          difficulty: 'Easy',
+          defaultCode: {
+            'python': 'def twoSum(nums, target):\n    # Your code here\n    pass',
+            'java': 'class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        // Your code here\n    }\n}',
+            'javascript': 'function twoSum(nums, target) {\n    // Your code here\n}',
+            'cpp': 'class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        // Your code here\n    }\n};'
+          },
+          testCases: [
+            { input: '[2,7,11,15], 9', output: '[0,1]' },
+            { input: '[3,2,4], 6', output: '[1,2]' }
+          ]
+        }
+      ],
+      2: [
+        {
+          id: 1,
+          title: 'Contains Duplicate',
+          description: 'Given an integer array nums, return true if any value appears at least twice in the array, and return false if every element is distinct.',
+          difficulty: 'Easy',
+          defaultCode: {
+            'python': 'def containsDuplicate(nums):\n    # Your code here\n    pass',
+            'java': 'class Solution {\n    public boolean containsDuplicate(int[] nums) {\n        // Your code here\n    }\n}',
+            'javascript': 'function containsDuplicate(nums) {\n    // Your code here\n}',
+            'cpp': 'class Solution {\npublic:\n    bool containsDuplicate(vector<int>& nums) {\n        // Your code here\n    }\n};'
+          },
+          testCases: [
+            { input: '[1,2,3,1]', output: 'true' },
+            { input: '[1,2,3,4]', output: 'false' }
+          ]
+        }
+      ]
+    };
+
+    return problems[topicId] || [];
+  }
+
+  private getArrayHints(): Hint[] {
+    return [
+      {
+        title: 'Two Pointer Technique',
+        description: 'Use two pointers for pair sum, palindrome, and sliding window problems',
+        codeSnippet: 'left, right = 0, len(arr)-1\nwhile left < right:\n    # Process elements at pointers\n    left += 1\n    right -= 1',
+        language: 'python'
+      },
+      {
+        title: 'Sliding Window',
+        description: 'Efficiently process subarrays with a fixed window size',
+        codeSnippet: 'window_start = 0\nfor window_end in range(len(arr)):\n    # Add arr[window_end] to window\n    while condition_exceeded:\n        # Remove arr[window_start] from window\n        window_start += 1',
+        language: 'python'
+      },
+      {
+        title: 'Prefix Sum',
+        description: 'Precompute cumulative sums for efficient range sum queries',
+        codeSnippet: 'prefix = [0]\nfor num in arr:\n    prefix.append(prefix[-1] + num)\n# Sum from i to j: prefix[j+1] - prefix[i]',
+        language: 'python'
+      },
+      {
+        title: 'In-place Operations',
+        description: 'Modify array in place to save space',
+        codeSnippet: 'def reverse_in_place(arr):\n    left, right = 0, len(arr)-1\n    while left < right:\n        arr[left], arr[right] = arr[right], arr[left]\n        left += 1\n        right -= 1',
+        language: 'python'
+      },
+      {
+        title: 'Binary Search',
+        description: 'Efficiently find elements in sorted arrays',
+        codeSnippet: 'low, high = 0, len(arr)-1\nwhile low <= high:\n    mid = (low + high) // 2\n    if arr[mid] == target:\n        return mid\n    elif arr[mid] < target:\n        low = mid + 1\n    else:\n        high = mid - 1',
+        language: 'python'
+      }
+    ];
+  }
+
+  private getHashSetHints(): Hint[] {
+    return [
+      {
+        title: 'Duplicate Detection',
+        description: 'Use sets to quickly check for duplicate elements',
+        codeSnippet: 'def has_duplicate(arr):\n    seen = set()\n    for item in arr:\n        if item in seen:\n            return True\n        seen.add(item)\n    return False',
+        language: 'python'
+      },
+      {
+        title: 'Set Operations',
+        description: 'Use union, intersection, and difference for set operations',
+        codeSnippet: 'set1 = {1, 2, 3}\nset2 = {3, 4, 5}\nunion = set1 | set2        # {1, 2, 3, 4, 5}\nintersection = set1 & set2 # {3}\ndifference = set1 - set2   # {1, 2}',
+        language: 'python'
+      },
+      {
+        title: 'Finding Unique Elements',
+        description: 'Use sets to get unique elements from a collection',
+        codeSnippet: 'def find_unique(arr):\n    return list(set(arr))',
+        language: 'python'
+      },
+      {
+        title: 'Membership Testing',
+        description: 'Fast O(1) membership testing with sets',
+        codeSnippet: 'items_set = set(items)\nif target in items_set:\n    # Target exists in items',
+        language: 'python'
+      },
+      {
+        title: 'Set Comprehensions',
+        description: 'Create sets using comprehensions',
+        codeSnippet: 'squares = {x**2 for x in range(10)}\neven_squares = {x**2 for x in range(10) if x % 2 == 0}',
+        language: 'python'
+      }
+    ];
+  }
+
+  private getHashMapHints(): Hint[] {
+    return [
+      {
+        title: 'Frequency Counting',
+        description: 'Use dictionaries to count element frequencies',
+        codeSnippet: 'from collections import defaultdict\nfreq = defaultdict(int)\nfor item in items:\n    freq[item] += 1',
+        language: 'python'
+      },
+      {
+        title: 'Grouping Elements',
+        description: 'Group elements by a key using dictionaries',
+        codeSnippet: 'from collections import defaultdict\ngroups = defaultdict(list)\nfor item in items:\n    key = item[0]  # Group by first character\n    groups[key].append(item)',
+        language: 'python'
+      },
+      {
+        title: 'Memoization',
+        description: 'Cache function results using dictionaries',
+        codeSnippet: 'cache = {}\ndef fibonacci(n):\n    if n in cache:\n        return cache[n]\n    if n <= 1:\n        return n\n    result = fibonacci(n-1) + fibonacci(n-2)\n    cache[n] = result\n    return result',
+        language: 'python'
+      },
+      {
+        title: 'Two Sum Pattern',
+        description: 'Use dictionary to find complements',
+        codeSnippet: 'def two_sum(nums, target):\n    num_map = {}\n    for i, num in enumerate(nums):\n        complement = target - num\n        if complement in num_map:\n            return [num_map[complement], i]\n        num_map[num] = i\n    return []',
+        language: 'python'
+      },
+      {
+        title: 'Default Values',
+        description: 'Handle missing keys with get() or defaultdict',
+        codeSnippet: '# Using get()\nvalue = my_dict.get(key, default_value)\n\n# Using defaultdict\nfrom collections import defaultdict\nmy_dict = defaultdict(int)  # Default value 0',
+        language: 'python'
+      }
+    ];
+  }
+
+  private getStringHints(): Hint[] {
+    return [
+      {
+        title: 'String Reversal',
+        description: 'Reverse a string using slicing',
+        codeSnippet: 'def reverse_string(s):\n    return s[::-1]',
+        language: 'python'
+      },
+      {
+        title: 'Palindrome Check',
+        description: 'Check if a string is a palindrome',
+        codeSnippet: 'def is_palindrome(s):\n    left, right = 0, len(s)-1\n    while left < right:\n        if s[left] != s[right]:\n            return False\n        left += 1\n        right -= 1\n    return True',
+        language: 'python'
+      },
+      {
+        title: 'Character Frequency',
+        description: 'Count character frequencies',
+        codeSnippet: 'from collections import Counter\nchar_count = Counter(s)',
+        language: 'python'
+      },
+      {
+        title: 'String Splitting',
+        description: 'Split strings into words or parts',
+        codeSnippet: 'words = s.split()  # Split by whitespace\nparts = s.split(",")  # Split by comma',
+        language: 'python'
+      },
+      {
+        title: 'String Joining',
+        description: 'Join elements into a string',
+        codeSnippet: 'words = ["Hello", "World"]\nresult = " ".join(words)  # "Hello World"',
+        language: 'python'
+      }
+    ];
+  }
+
+  private getLinkedListHints(): Hint[] {
+    return [
+      {
+        title: 'Reverse Linked List',
+        description: 'Iteratively reverse a linked list',
+        codeSnippet: 'def reverse_list(head):\n    prev = None\n    current = head\n    while current:\n        next_node = current.next\n        current.next = prev\n        prev = current\n        current = next_node\n    return prev',
+        language: 'python'
+      },
+      {
+        title: 'Fast and Slow Pointers',
+        description: 'Find middle node or detect cycles',
+        codeSnippet: 'slow = fast = head\nwhile fast and fast.next:\n    slow = slow.next\n    fast = fast.next.next\n# slow is now at middle',
+        language: 'python'
+      },
+      {
+        title: 'Dummy Node',
+        description: 'Use dummy node to simplify edge cases',
+        codeSnippet: 'dummy = ListNode(0)\ndummy.next = head\ncurrent = dummy\n# Process list...\nreturn dummy.next',
+        language: 'python'
+      },
+      {
+        title: 'Cycle Detection',
+        description: 'Detect cycles in linked list',
+        codeSnippet: 'slow = fast = head\nwhile fast and fast.next:\n    slow = slow.next\n    fast = fast.next.next\n    if slow == fast:\n        return True  # Cycle detected\nreturn False',
+        language: 'python'
+      },
+      {
+        title: 'Merge Two Lists',
+        description: 'Merge two sorted linked lists',
+        codeSnippet: 'def merge_two_lists(l1, l2):\n    dummy = ListNode(0)\n    current = dummy\n    while l1 and l2:\n        if l1.val < l2.val:\n            current.next = l1\n            l1 = l1.next\n        else:\n            current.next = l2\n            l2 = l2.next\n        current = current.next\n    current.next = l1 if l1 else l2\n    return dummy.next',
+        language: 'python'
+      }
+    ];
   }
 }

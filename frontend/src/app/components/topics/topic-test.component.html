@@ -1,0 +1,104 @@
+<div class="container mt-4" *ngIf="!isLoading">
+  <div class="row">
+    <div class="col-12">
+      <!-- Header -->
+      <div class="card mb-4">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+          <h4 class="mb-0">
+            <i class="fas fa-code me-2"></i>Coding Test
+          </h4>
+          <span class="badge bg-warning">Problem {{ currentProblemIndex + 1 }} of {{ problems.length }}</span>
+        </div>
+      </div>
+
+      <div class="row">
+        <!-- Problem Description -->
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">{{ currentProblem?.title }}</h5>
+            </div>
+            <div class="card-body">
+              <p class="card-text">{{ currentProblem?.description }}</p>
+              
+              <div class="mb-3">
+                <h6>Difficulty: <span class="badge" [ngClass]="{
+                  'bg-success': currentProblem?.difficulty === 'Easy',
+                  'bg-warning': currentProblem?.difficulty === 'Medium',
+                  'bg-danger': currentProblem?.difficulty === 'Hard'
+                }">{{ currentProblem?.difficulty }}</span></h6>
+              </div>
+
+              <!-- FIXED: Added null check with safe navigation operator -->
+              <div *ngIf="currentProblem?.testCases" class="mt-4">
+                <h6>Test Cases:</h6>
+                <div *ngFor="let testCase of currentProblem?.testCases || []; let i = index" class="bg-light p-3 rounded mb-2">
+                  <strong>Input:</strong> {{ testCase.input }}<br>
+                  <strong>Output:</strong> {{ testCase.output }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Code Editor -->
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">Code Editor</h5>
+              <select class="form-select form-select-sm" style="width: auto;" [(ngModel)]="selectedLanguage" (change)="onLanguageChange()">
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+                <option value="javascript">JavaScript</option>
+                <option value="cpp">C++</option>
+              </select>
+            </div>
+            <div class="card-body">
+              <textarea class="form-control code-editor" rows="12" 
+                        [(ngModel)]="userCode" 
+                        placeholder="Write your solution here..."></textarea>
+              
+              <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+                <button class="btn btn-success me-md-2" (click)="runCode()">
+                  <i class="fas fa-play me-1"></i>Run Code
+                </button>
+                <button class="btn btn-primary">
+                  <i class="fas fa-paper-plane me-1"></i>Submit
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Output -->
+          <div class="card">
+            <div class="card-header">
+              <h5 class="mb-0">Output</h5>
+            </div>
+            <div class="card-body">
+              <div class="output-container">
+                <pre>{{ output || 'Run your code to see results...' }}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="d-flex justify-content-between mt-4">
+        <button class="btn btn-outline-primary" (click)="previousProblem()" [disabled]="currentProblemIndex === 0">
+          <i class="fas fa-arrow-left me-1"></i>Previous Problem
+        </button>
+        <button class="btn btn-primary" (click)="nextProblem()" [disabled]="currentProblemIndex === problems.length - 1">
+          Next Problem <i class="fas fa-arrow-right ms-1"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="isLoading" class="text-center py-5">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <p class="mt-3">Loading test problems...</p>
+</div>

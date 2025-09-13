@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { TopicService } from '../../services/topic.service';
+import { TopicService, Topic, Problem } from '../../services/topic.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-topic-list',
@@ -11,19 +12,17 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./topic-list.component.css']
 })
 export class TopicListComponent implements OnInit {
-  topics: any[] = [];
-  filteredTopics: any[] = [];
+  topics: Topic[] = [];
+  filteredTopics: Topic[] = [];
   searchText = '';
   selectedCategory = 'all';
   categories = ['all', 'DSA', 'SQL', 'Python'];
-  selectedTopic: any = null;
-  showTopicDetail = false;
-  userCode: string = '';
-  output: string = '';
   isLoading = true;
-  activeTab: string = 'hints';
 
-  constructor(private topicService: TopicService) { }
+  constructor(
+    private topicService: TopicService,
+    private router: Router
+  ) { }
 
   ngOnInit() {
     this.loadTopics();
@@ -31,12 +30,12 @@ export class TopicListComponent implements OnInit {
 
   loadTopics() {
     this.topicService.getTopics().subscribe(
-      data => {
+      (data: Topic[]) => {
         this.topics = data;
         this.filteredTopics = data;
         this.isLoading = false;
       },
-      error => {
+      (error: any) => {
         console.error('Error loading topics:', error);
         this.isLoading = false;
       }
@@ -52,50 +51,11 @@ export class TopicListComponent implements OnInit {
     });
   }
 
-  selectTopic(topic: any) {
-    this.selectedTopic = topic;
-    this.showTopicDetail = true;
-    this.userCode = topic.defaultCode || '# Write your solution here\n';
-    this.output = '';
-    this.activeTab = 'hints';
+  viewTopicDetails(topic: Topic) {
+    this.router.navigate(['/topics', topic.id]);
   }
 
-  closeTopicDetail() {
-    this.showTopicDetail = false;
-    this.selectedTopic = null;
-  }
-
-  runCode() {
-    this.output = 'Running your code...\n\n';
-    
-    // Simulate code execution
-    setTimeout(() => {
-      if (this.userCode.includes('def') || this.userCode.includes('class') || this.userCode.includes('return')) {
-        this.output += '✅ Great job! Your solution looks correct.\n';
-        this.output += '🎉 +10 points earned!\n\n';
-        this.output += 'Sample Output: Solution executed successfully';
-        
-        // Add some sample outputs based on the topic
-        if (this.selectedTopic.name.includes('Two Sum')) {
-          this.output += '\nInput: [2,7,11,15], target=9\nOutput: [0,1]';
-        } else if (this.selectedTopic.name.includes('Duplicate')) {
-          this.output += '\nInput: [1,2,3,1]\nOutput: True';
-        } else if (this.selectedTopic.name.includes('Palindrome')) {
-          this.output += '\nInput: "A man, a plan, a canal: Panama"\nOutput: True';
-        }
-      } else {
-        this.output += '❌ Please implement a complete solution.\n';
-        this.output += '💡 Hint: ' + this.selectedTopic.hints[0];
-      }
-    }, 1500);
-  }
-
-  setActiveTab(tab: string) {
-    this.activeTab = tab;
-  }
-
-  getProblemIcon(index: number): string {
-    const icons = ['🔍', '🎯', '⚡', '🚀', '💡', '🔥', '🌟', '📊', '🎮', '🏆'];
-    return icons[index % icons.length];
+  takeTest(topic: Topic) {
+    this.router.navigate(['/test', topic.id]);
   }
 }
