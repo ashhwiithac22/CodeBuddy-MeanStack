@@ -2,16 +2,16 @@ import { Component } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
-import { CommonModule } from '@angular/common'; // Add this
+import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-login',
+  standalone: true, // Added this line
   templateUrl: './login.component.html',
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule], // Moved imports here
   styleUrls: ['./login.component.css']
 })
-
 export class LoginComponent {
   loginForm: FormGroup;
   loading = false;
@@ -25,8 +25,9 @@ export class LoginComponent {
     private router: Router,
     private authService: AuthService
   ) {
+    // Redirect to dashboard if already logged in
     if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/']);
+      this.router.navigate(['/dashboard']);
     }
     
     this.loginForm = this.formBuilder.group({
@@ -34,6 +35,7 @@ export class LoginComponent {
       password: ['', Validators.required]
     });
     
+    // Get return url from route parameters or default to '/dashboard'
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
   }
 
