@@ -8,9 +8,9 @@ import topicRoutes from './routes/topicRoutes.js';
 import questionRoutes from './routes/questionRoutes.js';
 import setDailyQuestions from './utils/dailyCron.js';
 import cors from 'cors';
+dotenv.config();
 
 // Load environment variables
-dotenv.config();
 
 // Connect to database
 connectDB();

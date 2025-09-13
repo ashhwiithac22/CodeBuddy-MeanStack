@@ -1,8 +1,9 @@
 // backend/routes/userRoutes.js
-const express = require('express');
+import express from 'express';
+import { registerUser, getUserProfile } from '../controllers/userController.js';
+import protect from '../middleware/authMiddleware.js';
+
 const router = express.Router();
-const { registerUser, getUserProfile } = require('../controllers/userController');
-const protect = require('../middleware/authMiddleware');
 
 // POST /api/users (register)
 router.post('/', registerUser);
@@ -10,4 +11,4 @@ router.post('/', registerUser);
 // GET /api/users/profile (protected route)
 router.get('/profile', protect, getUserProfile);
 
-module.exports = router;
+export default router;

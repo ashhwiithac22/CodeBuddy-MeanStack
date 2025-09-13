@@ -1,15 +1,14 @@
 // backend/controllers/userController.js
-const User = require('../models/User');
-const generateToken = require('../utils/generateToken');
+import User from '../models/User.js';
+import generateToken from '../utils/generateToken.js';
 
 // @desc    Register a new user
 // @route   POST /api/users
 // @access  Public
-const registerUser = async (req, res) => {
+export const registerUser = async (req, res) => {
   const { username, email, password, confirmPassword } = req.body;
 
   try {
-    // Validation
     if (!username || !email || !password) {
       return res.status(400).json({ message: 'Please fill in all fields' });
     }
@@ -22,25 +21,17 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
 
-    // Check if user exists
-    const userExists = await User.findOne({ 
-      $or: [{ email }, { username }] 
-    });
-    
+    const userExists = await User.findOne({ $or: [{ email }, { username }] });
+
     if (userExists) {
-      return res.status(400).json({ 
-        message: userExists.email === email 
-          ? 'User with this email already exists' 
-          : 'Username is already taken' 
+      return res.status(400).json({
+        message: userExists.email === email
+          ? 'User with this email already exists'
+          : 'Username is already taken'
       });
     }
 
-    // Create user
-    const user = await User.create({
-      username,
-      email,
-      password,
-    });
+    const user = await User.create({ username, email, password });
 
     if (user) {
       res.status(201).json({
@@ -56,7 +47,7 @@ const registerUser = async (req, res) => {
     }
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Server error during registration',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
@@ -66,20 +57,16 @@ const registerUser = async (req, res) => {
 // @desc    Auth user & get token
 // @route   POST /api/auth/login
 // @access  Public
-const authUser = async (req, res) => {
+export const authUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Validation
     if (!email || !password) {
       return res.status(400).json({ message: 'Please provide email and password' });
     }
 
-    // Check if user exists with email or username
-    const user = await User.findOne({
-      $or: [{ email }, { username: email }]
-    });
-    
+    const user = await User.findOne({ $or: [{ email }, { username: email }] });
+
     if (user && (await user.matchPassword(password))) {
       res.json({
         _id: user._id,
@@ -94,7 +81,7 @@ const authUser = async (req, res) => {
     }
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Server error during login',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
@@ -104,10 +91,10 @@ const authUser = async (req, res) => {
 // @desc    Get user profile
 // @route   GET /api/users/profile
 // @access  Private
-const getUserProfile = async (req, res) => {
+export const getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
-    
+
     if (user) {
       res.json({
         _id: user._id,
@@ -124,10 +111,4 @@ const getUserProfile = async (req, res) => {
     console.error('Get profile error:', error);
     res.status(500).json({ message: 'Server error' });
   }
-};
-
-module.exports = { 
-  registerUser, 
-  authUser, 
-  getUserProfile 
 };

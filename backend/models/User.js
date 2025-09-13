@@ -1,11 +1,11 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
-  
+
   // Progress tracking fields
   progress: {
     totalSolved: { type: Number, default: 0 },
@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
     streak: { type: Number, default: 0 },
     lastActivity: { type: Date, default: Date.now }
   },
-  
+
   // Topic progress
   topics: [{
     topicId: { type: mongoose.Schema.Types.ObjectId, ref: 'Topic' },
@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
     solved: { type: Number, default: 0 },
     total: { type: Number, default: 0 }
   }],
-  
+
   // Daily challenges completed
   dailyChallenges: [{
     date: Date,
@@ -33,4 +33,6 @@ const userSchema = new mongoose.Schema({
   }]
 });
 
-module.exports = mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
+
+export default User;
